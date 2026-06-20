@@ -1,0 +1,243 @@
+<!doctype html>
+<html lang="en"><head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Tree/Shrub Per App Price Calculator</title>
+<style>
+:root{
+  --bg:#f6f7fb;--card:#fff;--ink:#16202a;--muted:#64748b;--line:#d9e1ee;
+  --blue:#1463ff;--green:#0b6b3a;--green-bg:#effaf3;--brown:#7a4a00;--brown-bg:#fff8ec;
+  --orange:#9a3412;--orange-bg:#fff7ed;--danger:#b42318;--warn:#9f1239;--good:#087443;
+  --shadow:0 6px 24px rgba(15,23,42,.08);--tap:48px;
+}
+*{box-sizing:border-box} html{-webkit-text-size-adjust:100%}
+body{margin:0;font-family:system-ui,-apple-system,Segoe UI,Roboto,Arial,sans-serif;background:var(--bg);color:var(--ink);font-size:16px}
+button,input,textarea{font:inherit} button{touch-action:manipulation}
+header{position:sticky;top:0;z-index:5;background:rgba(255,255,255,.97);border-bottom:1px solid var(--line);padding:calc(10px + env(safe-area-inset-top)) 16px 12px;box-shadow:0 2px 14px rgba(15,23,42,.05)}
+h1{font-size:clamp(18px,4vw,24px);margin:0 0 4px}.sub{font-size:13px;color:var(--muted);line-height:1.35}.modeBadge{display:inline-block;margin-left:6px;padding:2px 8px;border-radius:999px;background:#eef4ff;color:#1e40af;font-size:12px;font-weight:800}
+.wrap{max-width:1240px;margin:0 auto;padding:16px;padding-bottom:calc(18px + env(safe-area-inset-bottom));display:grid;gap:16px}.panel{background:var(--card);border:1px solid var(--line);border-radius:16px;box-shadow:var(--shadow);padding:14px;min-width:0}.section-title{font-size:18px;margin:8px 0 10px}.section-help{font-size:12px;color:var(--muted);margin:-4px 0 10px;line-height:1.35}
+.buttonGrid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px}.treeGrid{grid-template-columns:repeat(3,minmax(0,1fr))}.adjustmentGrid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px}
+.tapBtn{width:100%;text-align:left;border:1px solid var(--line);background:#fff;border-radius:16px;padding:12px;min-height:132px;cursor:pointer;display:flex;flex-direction:column;gap:6px;position:relative;overflow:hidden}.tapBtn:active{transform:scale(.99)}
+.tapBtn .topline{display:flex;align-items:center;justify-content:space-between;gap:8px}.tapBtn .icon{font-size:26px;line-height:1}.tapBtn .name{font-size:21px;font-weight:900;line-height:1}.tapBtn .pts{font-size:12px;color:var(--muted);font-weight:800;background:rgba(100,116,139,.10);border-radius:999px;padding:3px 8px;white-space:nowrap}.tapBtn .desc{font-size:12px;color:#475569;line-height:1.25}.tapBtn .countBadge{margin-top:auto;align-self:flex-start;border-radius:999px;background:#eef4ff;color:#1e40af;padding:5px 10px;font-weight:900;min-width:52px;text-align:center}
+.tapBtn.shrub{background:var(--green-bg);border-color:#bee7cc}.tapBtn.shrub .name,.tapBtn.shrub .icon{color:var(--green)}.tapBtn.tree{background:var(--brown-bg);border-color:#ead2ad}.tapBtn.tree .name,.tapBtn.tree .icon{color:var(--brown)}.tapBtn.adjust{background:#fff7f8;border-color:#fecdd3;min-height:118px}.tapBtn.adjust .name{color:var(--warn);font-size:16px}.tapBtn.adjust .desc{color:#6b4550}.tapBtn.adjust .icon{font-size:22px;color:var(--warn)}.tapBtn.extra{min-height:94px;background:var(--orange-bg);border-color:#fed7aa}.tapBtn.extra .name,.tapBtn.extra .icon{color:var(--orange)}
+.results{display:grid;grid-template-columns:minmax(0,1.1fr) minmax(320px,.9fr);gap:16px}.totalRow{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px;margin-bottom:12px}.totalbox{border:1px solid var(--line);border-radius:14px;padding:12px;background:#fbfdff}.totalbox b{display:block;font-size:22px}.totalbox span{color:var(--muted);font-size:12px;line-height:1.3}.price{font-size:clamp(32px,8vw,44px);font-weight:900;color:var(--good);margin:4px 0}.priceNote{font-size:13px;color:var(--muted);line-height:1.35}.countrow{display:grid;grid-template-columns:minmax(0,1fr) auto auto auto;align-items:center;gap:8px;border-bottom:1px solid var(--line);padding:9px 0}.countrow:last-child{border-bottom:0}.label{font-size:14px;min-width:0}.label span{color:var(--muted);font-size:12px;display:block;line-height:1.25}.pill{min-width:42px;text-align:center;background:#eef4ff;border-radius:999px;padding:5px 9px;font-weight:900}.mini{border:1px solid var(--line);background:#fff;border-radius:10px;min-width:var(--tap);height:var(--tap);font-size:24px;cursor:pointer}.mini.danger{color:var(--danger)}
+.controls{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:9px;margin-top:8px}.control{display:flex;flex-direction:column;gap:6px;border:1px solid var(--line);border-radius:12px;padding:10px;background:#fff;font-size:13px;color:var(--muted)}.control input[type="number"],.control input[type="text"],.control textarea{width:100%;padding:10px;border:1px solid var(--line);border-radius:10px;font-size:16px;color:var(--ink)}.control textarea{min-height:64px;resize:vertical}.actions{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:8px;margin-top:12px}.action{border:0;border-radius:12px;padding:12px;background:var(--blue);color:#fff;font-weight:900;cursor:pointer;min-height:var(--tap)}.action.secondary{background:#334155}.action.warn{background:var(--danger)}.action.full{background:#0f766e}
+.editorGrid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}.editorCard{border:1px solid var(--line);border-radius:12px;padding:10px;background:#fbfdff}.editorCard h4{margin:0 0 8px}.editorFields{display:grid;grid-template-columns:100px 1fr;gap:8px}.quote{width:100%;min-height:112px;border:1px solid var(--line);border-radius:12px;padding:10px;font:13px ui-monospace,SFMono-Regular,Consolas,monospace;resize:vertical;background:#fbfdff}.note{font-size:12px;color:var(--muted);line-height:1.35;margin-top:10px}.hidden{display:none!important}.settingsSummary{display:none;border:1px solid var(--line);border-radius:12px;background:#fbfdff;padding:10px;margin-top:8px;font-size:13px;color:var(--muted);line-height:1.35}
+table{width:100%;border-collapse:collapse;font-size:14px;background:#fff;border:1px solid var(--line);border-radius:12px;overflow:hidden}th,td{padding:9px;border-bottom:1px solid var(--line);text-align:left}th{background:#f8fafc;color:#334155}tr:last-child td{border-bottom:0}.right{text-align:right}.programTotal{font-weight:900;color:var(--good)}
+@media(max-width:900px){.buttonGrid,.treeGrid,.adjustmentGrid{grid-template-columns:repeat(2,minmax(0,1fr))}.results{grid-template-columns:1fr}.totalRow{grid-template-columns:repeat(2,minmax(0,1fr))}.controls,.actions,.editorGrid{grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media(max-width:560px){header{padding-left:12px;padding-right:12px}.wrap{padding:10px;gap:10px}.panel{border-radius:12px;padding:12px}.buttonGrid,.treeGrid,.adjustmentGrid{grid-template-columns:1fr;gap:8px}.tapBtn{min-height:116px;padding:12px}.tapBtn.extra{min-height:84px}.tapBtn.adjust{min-height:104px}.countrow{gap:6px}.mini{min-width:44px;height:44px}.controls,.actions,.editorGrid{grid-template-columns:1fr}.editorFields{grid-template-columns:1fr}.quote{font-size:12px}}
+@media print{header,.topWork,.actions,.mini,.controls,.adminOnly,.note{display:none!important}.wrap{display:block;padding:0}.panel{box-shadow:none;border:0}.quote{border:0}.price{font-size:30px}.settingsSummary{display:block}.results{display:block}body{background:#fff}}
+</style>
+</head>
+<body>
+<header>
+  <h1>Tree/Shrub Per App Price Calculator <span id="modeBadge" class="modeBadge hidden">Technician</span></h1>
+  <div class="sub">Tap plant buttons to build the tally. On mobile, results stay at the bottom so the buttons do not move while counting.</div>
+</header>
+<main class="wrap">
+  <section class="topWork">
+    <section class="panel">
+      <h2 class="section-title">Shrubs</h2>
+      <div class="section-help">Use approximate height and canopy width. Points are shown small so techs can focus on size categories.</div>
+      <div class="buttonGrid" id="shrubButtons"><button class="tapBtn shrub"><div class="topline"><span class="icon">🌿</span><span class="pts">1 pts</span><span class="countBadge">0</span></div><div class="name">SM Shrub</div><div class="desc">Small shrub: up to 30 in tall and up to 3 ft wide.</div></button><button class="tapBtn shrub"><div class="topline"><span class="icon">🌿</span><span class="pts">2 pts</span><span class="countBadge">0</span></div><div class="name">M Shrub</div><div class="desc">Medium shrub: 30-48 in tall and up to 3 ft wide, or up to 30 in tall and 3-6 ft wide.</div></button><button class="tapBtn shrub"><div class="topline"><span class="icon">🌿</span><span class="pts">3 pts</span><span class="countBadge">0</span></div><div class="name">L Shrub</div><div class="desc">Large shrub: 30-48 in tall and 3-6 ft wide.</div></button><button class="tapBtn shrub"><div class="topline"><span class="icon">🌿</span><span class="pts">4 pts</span><span class="countBadge">0</span></div><div class="name">XL Shrub</div><div class="desc">Extra large shrub: 4-10 ft tall and up to 5 ft wide.</div></button><button class="tapBtn shrub"><div class="topline"><span class="icon">🌿</span><span class="pts">5 pts</span><span class="countBadge">0</span></div><div class="name">XXL Shrub</div><div class="desc">Very large shrub: over 10 ft tall or over 6 ft wide.</div></button></div>
+    </section>
+    <section class="panel">
+      <h2 class="section-title">Trees</h2>
+      <div class="section-help">No tree should be less than 3 points. Trees over 20 ft are not priced as topical treatment.</div>
+      <div class="buttonGrid treeGrid" id="treeButtons"><button class="tapBtn tree"><div class="topline"><span class="icon">🌳</span><span class="pts">3 pts</span><span class="countBadge">0</span></div><div class="name">SM Tree</div><div class="desc">Small tree: up to 5 ft tall with trunk up to 1 in diameter.</div></button><button class="tapBtn tree"><div class="topline"><span class="icon">🌳</span><span class="pts">4 pts</span><span class="countBadge">0</span></div><div class="name">M Tree</div><div class="desc">Medium tree: 5-10 ft tall with trunk 1-2 in diameter.</div></button><button class="tapBtn tree"><div class="topline"><span class="icon">🌳</span><span class="pts">5 pts</span><span class="countBadge">0</span></div><div class="name">L Tree</div><div class="desc">Large tree: 10-15 ft tall with trunk 2-4 in diameter.</div></button></div>
+    </section>
+    <section class="panel">
+      <h2 class="section-title">Adjustments &amp; Review Items</h2>
+      <div class="buttonGrid" id="extraButtons"><button class="tapBtn extra"><div class="topline"><span class="icon">🚚</span><span class="countBadge">0</span></div><div class="name">Truck Move</div><div class="desc">Add $12.00 each time the truck must be moved.</div></button></div>
+      <div class="adjustmentGrid" id="adjustmentButtons"><button class="tapBtn adjust"><div class="topline"><span class="icon">📷</span><span class="pts">0.5 pts</span><span class="countBadge">0</span></div><div class="name">Dying / Declining Plant</div><div class="desc">Plant is already declining or dying. Take full-plant and close-up pictures in CompanyCam.</div></button><button class="tapBtn adjust"><div class="topline"><span class="icon">⚠️</span><span class="pts">0.25 pts</span><span class="countBadge">0</span></div><div class="name">Non-Covered Ornamental</div><div class="desc">Japanese maples or other ornamentals not normally covered. Take clear pictures in CompanyCam.</div></button><button class="tapBtn adjust"><div class="topline"><span class="icon">⚠️</span><span class="pts">1 pts</span><span class="countBadge">0</span></div><div class="name">Hazard</div><div class="desc">Unsafe slopes, plants near ponds, difficult parking, etc.</div></button><button class="tapBtn adjust"><div class="topline"><span class="icon">🍎</span><span class="pts">0.25 pts</span><span class="countBadge">0</span></div><div class="name">Fruit Trees</div><div class="desc">Fruit trees need office review. Take pictures in CompanyCam.</div></button><button class="tapBtn adjust"><div class="topline"><span class="icon">📷</span><span class="pts">0 pts</span><span class="countBadge">0</span></div><div class="name">Flowers / Ground Cover</div><div class="desc">Flag separately for office review. Take pictures in CompanyCam.</div></button><button class="tapBtn adjust"><div class="topline"><span class="icon">🌹</span><span class="pts">0 pts</span><span class="countBadge">0</span></div><div class="name">Roses</div><div class="desc">Do not include unless specifically requested by customer. Take pictures in CompanyCam.</div></button></div>
+    </section>
+  </section>
+
+  <section class="panel resultsPanel">
+    <h2 class="section-title">Calculator Results</h2>
+    <div class="results">
+      <div>
+        <div class="totalRow">
+          <div class="totalbox"><b id="pointTotal">0</b><span>Total points</span></div>
+          <div class="totalbox"><b id="moveTotal">0</b><span>Truck moves</span></div>
+          <div class="totalbox"><b id="plantCountTotal">0</b><span>Plants counted</span></div>
+          <div class="totalbox"><span>Normal per app price</span><div class="price" id="perAppPrice">$65.00</div><div id="priceNote" class="priceNote">$65.00 base/minimum per app price + 0 pts × $1.00</div></div>
+        </div>
+        <h3>Current Tally</h3>
+        <div id="counts"><div class="note">No items added yet. Tap buttons above to start.</div></div>
+      </div>
+      <div>
+        <h3>8-Cycle Tree/Shrub Care Program</h3>
+        <table aria-label="8-cycle tree shrub care program breakdown">
+          <thead><tr><th>Cycle</th><th>Service</th><th class="right">Per app price</th></tr></thead>
+          <tbody id="programRows"><tr><td>1</td><td>Injection fertilization</td><td class="right">$97.50</td></tr><tr><td>2</td><td>Tree/Shrub care application</td><td class="right">$65.00</td></tr><tr><td>3</td><td>Tree/Shrub care application</td><td class="right">$65.00</td></tr><tr><td>4</td><td>Tree/Shrub care application</td><td class="right">$65.00</td></tr><tr><td>5</td><td>Tree/Shrub care application</td><td class="right">$65.00</td></tr><tr><td>6</td><td>Tree/Shrub care application</td><td class="right">$65.00</td></tr><tr><td>7</td><td>Tree/Shrub care application</td><td class="right">$65.00</td></tr><tr><td>8</td><td>Tree/Shrub care application</td><td class="right">$65.00</td></tr></tbody>
+          <tfoot><tr><td colspan="2" class="programTotal">Annual program total</td><td class="right programTotal" id="annualTotal">$552.50</td></tr></tfoot>
+        </table>
+        <div id="settingsSummary" class="settingsSummary">Base/minimum per app price: <b>$65.00</b><br>Point value: <b>$1.00</b><br>Truck move charge: <b>$12.00</b><br>Cycle 1 injection multiplier: <b>1.5x</b></div>
+        <div class="controls adminOnly">
+          <label class="control"><span>Base / minimum per app price</span><input type="number" id="minimum" value="65" step="0.01" min="0"></label>
+          <label class="control"><span>$ per point</span><input type="number" id="rate" value="1" step="0.01" min="0"></label>
+          <label class="control"><span>Truck move charge</span><input type="number" id="moveCharge" value="12" step="0.01" min="0"></label>
+          <label class="control"><span>Cycle 1 injection multiplier</span><input type="number" id="injectionMultiplier" value="1.5" step="0.01" min="0"></label>
+        </div>
+        <div class="actions">
+          <button class="action secondary" onclick="copySummary()">Copy Summary</button>
+          <button class="action secondary" onclick="window.print()">Print / Save PDF</button>
+          <button class="action warn" onclick="resetAll()">Clear Tally</button>
+          <button class="action full adminOnly" onclick="generateTechnicianVersion()">Generate Technician Version</button>
+        </div>
+        <h3>Copyable Summary</h3>
+        <textarea id="quote" class="quote" readonly=""></textarea>
+        <p class="note adminOnly">The technician version locks these settings and hides all admin pricing/category-editing fields.</p>
+      </div>
+    </div>
+  </section>
+
+  <section class="panel adminOnly" id="categoryEditorPanel">
+    <h2 class="section-title">Master Category Editor</h2>
+    <div class="section-help">Edit the point value and subtext for any category before generating the technician version. Changes apply immediately to this master calculator and to the generated technician calculator.</div>
+    <div class="editorGrid" id="categoryEditor"><div class="editorCard"><h4>🌿 SM Shrub</h4><div class="editorFields"><label class="control"><span>Points</span><input type="number" step="0.25" min="0" value="1" data-edit="pts" data-id="s_sm"></label><label class="control"><span>Subtext</span><textarea data-edit="desc" data-id="s_sm">Small shrub: up to 30 in tall and up to 3 ft wide.</textarea></label></div></div><div class="editorCard"><h4>🌿 M Shrub</h4><div class="editorFields"><label class="control"><span>Points</span><input type="number" step="0.25" min="0" value="2" data-edit="pts" data-id="s_m"></label><label class="control"><span>Subtext</span><textarea data-edit="desc" data-id="s_m">Medium shrub: 30-48 in tall and up to 3 ft wide, or up to 30 in tall and 3-6 ft wide.</textarea></label></div></div><div class="editorCard"><h4>🌿 L Shrub</h4><div class="editorFields"><label class="control"><span>Points</span><input type="number" step="0.25" min="0" value="3" data-edit="pts" data-id="s_l"></label><label class="control"><span>Subtext</span><textarea data-edit="desc" data-id="s_l">Large shrub: 30-48 in tall and 3-6 ft wide.</textarea></label></div></div><div class="editorCard"><h4>🌿 XL Shrub</h4><div class="editorFields"><label class="control"><span>Points</span><input type="number" step="0.25" min="0" value="4" data-edit="pts" data-id="s_xl"></label><label class="control"><span>Subtext</span><textarea data-edit="desc" data-id="s_xl">Extra large shrub: 4-10 ft tall and up to 5 ft wide.</textarea></label></div></div><div class="editorCard"><h4>🌿 XXL Shrub</h4><div class="editorFields"><label class="control"><span>Points</span><input type="number" step="0.25" min="0" value="5" data-edit="pts" data-id="s_xxl"></label><label class="control"><span>Subtext</span><textarea data-edit="desc" data-id="s_xxl">Very large shrub: over 10 ft tall or over 6 ft wide.</textarea></label></div></div><div class="editorCard"><h4>🌳 SM Tree</h4><div class="editorFields"><label class="control"><span>Points</span><input type="number" step="0.25" min="0" value="3" data-edit="pts" data-id="t_sm"></label><label class="control"><span>Subtext</span><textarea data-edit="desc" data-id="t_sm">Small tree: up to 5 ft tall with trunk up to 1 in diameter.</textarea></label></div></div><div class="editorCard"><h4>🌳 M Tree</h4><div class="editorFields"><label class="control"><span>Points</span><input type="number" step="0.25" min="0" value="4" data-edit="pts" data-id="t_m"></label><label class="control"><span>Subtext</span><textarea data-edit="desc" data-id="t_m">Medium tree: 5-10 ft tall with trunk 1-2 in diameter.</textarea></label></div></div><div class="editorCard"><h4>🌳 L Tree</h4><div class="editorFields"><label class="control"><span>Points</span><input type="number" step="0.25" min="0" value="5" data-edit="pts" data-id="t_l"></label><label class="control"><span>Subtext</span><textarea data-edit="desc" data-id="t_l">Large tree: 10-15 ft tall with trunk 2-4 in diameter.</textarea></label></div></div><div class="editorCard"><h4>🚚 Truck Move</h4><div class="editorFields"><label class="control"><span>Points</span><input type="number" step="0.25" min="0" value="0" data-edit="pts" data-id="move"></label><label class="control"><span>Subtext</span><textarea data-edit="desc" data-id="move">Add {moveCharge} each time the truck must be moved.</textarea></label></div></div><div class="editorCard"><h4>📷 Dying / Declining Plant</h4><div class="editorFields"><label class="control"><span>Points</span><input type="number" step="0.25" min="0" value="0.5" data-edit="pts" data-id="decline"></label><label class="control"><span>Subtext</span><textarea data-edit="desc" data-id="decline">Plant is already declining or dying. Take full-plant and close-up pictures in CompanyCam.</textarea></label></div></div><div class="editorCard"><h4>⚠️ Non-Covered Ornamental</h4><div class="editorFields"><label class="control"><span>Points</span><input type="number" step="0.25" min="0" value="0.25" data-edit="pts" data-id="noncovered"></label><label class="control"><span>Subtext</span><textarea data-edit="desc" data-id="noncovered">Japanese maples or other ornamentals not normally covered. Take clear pictures in CompanyCam.</textarea></label></div></div><div class="editorCard"><h4>⚠️ Hazard</h4><div class="editorFields"><label class="control"><span>Points</span><input type="number" step="0.25" min="0" value="1" data-edit="pts" data-id="hazard"></label><label class="control"><span>Subtext</span><textarea data-edit="desc" data-id="hazard">Unsafe slopes, plants near ponds, difficult parking, etc.</textarea></label></div></div><div class="editorCard"><h4>🍎 Fruit Trees</h4><div class="editorFields"><label class="control"><span>Points</span><input type="number" step="0.25" min="0" value="0.25" data-edit="pts" data-id="fruit"></label><label class="control"><span>Subtext</span><textarea data-edit="desc" data-id="fruit">Fruit trees need office review. Take pictures in CompanyCam.</textarea></label></div></div><div class="editorCard"><h4>📷 Flowers / Ground Cover</h4><div class="editorFields"><label class="control"><span>Points</span><input type="number" step="0.25" min="0" value="0" data-edit="pts" data-id="groundcover"></label><label class="control"><span>Subtext</span><textarea data-edit="desc" data-id="groundcover">Flag separately for office review. Take pictures in CompanyCam.</textarea></label></div></div><div class="editorCard"><h4>🌹 Roses</h4><div class="editorFields"><label class="control"><span>Points</span><input type="number" step="0.25" min="0" value="0" data-edit="pts" data-id="roses"></label><label class="control"><span>Subtext</span><textarea data-edit="desc" data-id="roses">Do not include unless specifically requested by customer. Take pictures in CompanyCam.</textarea></label></div></div></div>
+  </section>
+</main>
+<script>
+const TECHNICIAN_MODE = true;
+const LOCKED_CONFIG = {"settings":{"minimum":65,"rate":1,"moveCharge":12,"injectionMultiplier":1.5},"categories":[{"id":"s_sm","type":"plant","group":"shrub","label":"SM Shrub","icon":"🌿","style":"shrub","pts":1,"desc":"Small shrub: up to 30 in tall and up to 3 ft wide."},{"id":"s_m","type":"plant","group":"shrub","label":"M Shrub","icon":"🌿","style":"shrub","pts":2,"desc":"Medium shrub: 30-48 in tall and up to 3 ft wide, or up to 30 in tall and 3-6 ft wide."},{"id":"s_l","type":"plant","group":"shrub","label":"L Shrub","icon":"🌿","style":"shrub","pts":3,"desc":"Large shrub: 30-48 in tall and 3-6 ft wide."},{"id":"s_xl","type":"plant","group":"shrub","label":"XL Shrub","icon":"🌿","style":"shrub","pts":4,"desc":"Extra large shrub: 4-10 ft tall and up to 5 ft wide."},{"id":"s_xxl","type":"plant","group":"shrub","label":"XXL Shrub","icon":"🌿","style":"shrub","pts":5,"desc":"Very large shrub: over 10 ft tall or over 6 ft wide."},{"id":"t_sm","type":"plant","group":"tree","label":"SM Tree","icon":"🌳","style":"tree","pts":3,"desc":"Small tree: up to 5 ft tall with trunk up to 1 in diameter."},{"id":"t_m","type":"plant","group":"tree","label":"M Tree","icon":"🌳","style":"tree","pts":4,"desc":"Medium tree: 5-10 ft tall with trunk 1-2 in diameter."},{"id":"t_l","type":"plant","group":"tree","label":"L Tree","icon":"🌳","style":"tree","pts":5,"desc":"Large tree: 10-15 ft tall with trunk 2-4 in diameter."},{"id":"move","type":"extra","group":"extra","label":"Truck Move","icon":"🚚","style":"extra","pts":0,"desc":"Add {moveCharge} each time the truck must be moved."},{"id":"decline","type":"adjustment","group":"adjustment","label":"Dying / Declining Plant","icon":"📷","style":"adjust","pts":0.5,"desc":"Plant is already declining or dying. Take full-plant and close-up pictures in CompanyCam."},{"id":"noncovered","type":"adjustment","group":"adjustment","label":"Non-Covered Ornamental","icon":"⚠️","style":"adjust","pts":0.25,"desc":"Japanese maples or other ornamentals not normally covered. Take clear pictures in CompanyCam."},{"id":"hazard","type":"adjustment","group":"adjustment","label":"Hazard","icon":"⚠️","style":"adjust","pts":1,"desc":"Unsafe slopes, plants near ponds, difficult parking, etc."},{"id":"fruit","type":"adjustment","group":"adjustment","label":"Fruit Trees","icon":"🍎","style":"adjust","pts":0.25,"desc":"Fruit trees need office review. Take pictures in CompanyCam."},{"id":"groundcover","type":"adjustment","group":"adjustment","label":"Flowers / Ground Cover","icon":"📷","style":"adjust","pts":0,"desc":"Flag separately for office review. Take pictures in CompanyCam."},{"id":"roses","type":"adjustment","group":"adjustment","label":"Roses","icon":"🌹","style":"adjust","pts":0,"desc":"Do not include unless specifically requested by customer. Take pictures in CompanyCam."}]};
+const DEFAULT_CONFIG = {
+  settings:{minimum:65, rate:1, moveCharge:12, injectionMultiplier:1.5},
+  categories:[
+    {id:'s_sm', type:'plant', group:'shrub', label:'SM Shrub', icon:'🌿', style:'shrub', pts:1, desc:'Small shrub: up to 30 in tall and up to 3 ft wide.'},
+    {id:'s_m', type:'plant', group:'shrub', label:'M Shrub', icon:'🌿', style:'shrub', pts:2, desc:'Medium shrub: 30-48 in tall and up to 3 ft wide, or up to 30 in tall and 3-6 ft wide.'},
+    {id:'s_l', type:'plant', group:'shrub', label:'L Shrub', icon:'🌿', style:'shrub', pts:3, desc:'Large shrub: 30-48 in tall and 3-6 ft wide.'},
+    {id:'s_xl', type:'plant', group:'shrub', label:'XL Shrub', icon:'🌿', style:'shrub', pts:4, desc:'Extra large shrub: 4-10 ft tall and up to 5 ft wide.'},
+    {id:'s_xxl', type:'plant', group:'shrub', label:'XXL Shrub', icon:'🌿', style:'shrub', pts:5, desc:'Very large shrub: over 10 ft tall or over 6 ft wide.'},
+    {id:'t_sm', type:'plant', group:'tree', label:'SM Tree', icon:'🌳', style:'tree', pts:3, desc:'Small tree: up to 5 ft tall with trunk up to 1 in diameter.'},
+    {id:'t_m', type:'plant', group:'tree', label:'M Tree', icon:'🌳', style:'tree', pts:4, desc:'Medium tree: 5-10 ft tall with trunk 1-2 in diameter.'},
+    {id:'t_l', type:'plant', group:'tree', label:'L Tree', icon:'🌳', style:'tree', pts:5, desc:'Large tree: 10-15 ft tall with trunk 2-4 in diameter.'},
+    {id:'move', type:'extra', group:'extra', label:'Truck Move', icon:'🚚', style:'extra', pts:0, desc:'Add {moveCharge} each time the truck must be moved.'},
+    {id:'decline', type:'adjustment', group:'adjustment', label:'Dying / Declining Plant', icon:'📷', style:'adjust', pts:0.5, desc:'Plant is already declining or dying. Take full-plant and close-up pictures in CompanyCam.'},
+    {id:'noncovered', type:'adjustment', group:'adjustment', label:'Non-Covered Ornamental', icon:'⚠️', style:'adjust', pts:0.25, desc:'Japanese maples or other ornamentals not normally covered. Take clear pictures in CompanyCam.'},
+    {id:'hazard', type:'adjustment', group:'adjustment', label:'Hazard', icon:'⚠️', style:'adjust', pts:1, desc:'Unsafe slopes, plants near ponds, difficult parking, etc.'},
+    {id:'fruit', type:'adjustment', group:'adjustment', label:'Fruit Trees', icon:'🍎', style:'adjust', pts:0.25, desc:'Fruit trees need office review. Take pictures in CompanyCam.'},
+    {id:'groundcover', type:'adjustment', group:'adjustment', label:'Flowers / Ground Cover', icon:'📷', style:'adjust', pts:0, desc:'Flag separately for office review. Take pictures in CompanyCam.'},
+    {id:'roses', type:'adjustment', group:'adjustment', label:'Roses', icon:'🌹', style:'adjust', pts:0, desc:'Do not include unless specifically requested by customer. Take pictures in CompanyCam.'}
+  ]
+};
+let config = structuredClone(LOCKED_CONFIG || DEFAULT_CONFIG);
+let counts = Object.fromEntries(config.categories.map(i=>[i.id,0]));
+function el(id){return document.getElementById(id)}
+function money(n){return (+n||0).toLocaleString(undefined,{style:'currency',currency:'USD'});}
+function getNum(id){const x=el(id); return x ? (+x.value||0) : 0;}
+function fmtPts(n){return Number.isInteger(+n) ? String(+n) : String(+n).replace(/0+$/,'').replace(/\.$/,'');}
+function displayDesc(i){return (i.desc||'').replace('{moveCharge}', money(getNum('moveCharge')));}
+function add(id,delta=1){counts[id]=Math.max(0,(counts[id]||0)+delta); render();}
+function category(id){return config.categories.find(c=>c.id===id);}
+function renderButtons(){
+  const shrubBox=el('shrubButtons'); shrubBox.innerHTML='';
+  config.categories.filter(p=>p.group==='shrub').forEach(p=>shrubBox.appendChild(makeButton(p)));
+  const treeBox=el('treeButtons'); treeBox.innerHTML='';
+  config.categories.filter(p=>p.group==='tree').forEach(p=>treeBox.appendChild(makeButton(p)));
+  const extraBox=el('extraButtons'); extraBox.innerHTML='';
+  config.categories.filter(p=>p.group==='extra').forEach(p=>extraBox.appendChild(makeButton(p)));
+  const adjBox=el('adjustmentButtons'); adjBox.innerHTML='';
+  config.categories.filter(p=>p.group==='adjustment').forEach(p=>adjBox.appendChild(makeButton(p)));
+}
+function makeButton(p){
+  const b=document.createElement('button'); b.className='tapBtn '+(p.style||''); b.onclick=()=>add(p.id);
+  const ptsText = p.id==='move' ? '' : `<span class="pts">${fmtPts(p.pts)} pts</span>`;
+  b.innerHTML=`<div class="topline"><span class="icon">${p.icon||''}</span>${ptsText}<span class="countBadge">${counts[p.id]||0}</span></div><div class="name">${p.label}</div><div class="desc">${displayDesc(p)}</div>`;
+  return b;
+}
+function calc(){
+  const base=getNum('minimum'), rate=getNum('rate'), moveCharge=getNum('moveCharge'), injectionMultiplier=getNum('injectionMultiplier')||1.5;
+  const pointCategories=config.categories.filter(c=>c.id!=='move');
+  const totalPoints=pointCategories.reduce((sum,p)=>sum+(counts[p.id]||0)*(+p.pts||0),0);
+  const plantCount=config.categories.filter(c=>c.type==='plant').reduce((sum,p)=>sum+(counts[p.id]||0),0);
+  const moves=counts.move||0;
+  const normalPerApp=base+(totalPoints*rate)+(moves*moveCharge);
+  const injectionPrice=normalPerApp*injectionMultiplier;
+  const annualTotal=injectionPrice+(normalPerApp*7);
+  return {base,rate,moveCharge,injectionMultiplier,totalPoints,plantCount,moves,normalPerApp,injectionPrice,annualTotal};
+}
+function render(){
+  renderButtons(); renderEditor(); const c=calc();
+  el('pointTotal').textContent=fmtPts(c.totalPoints); el('moveTotal').textContent=c.moves; el('plantCountTotal').textContent=c.plantCount; el('perAppPrice').textContent=money(c.normalPerApp);
+  el('priceNote').textContent=`${money(c.base)} base/minimum per app price + ${fmtPts(c.totalPoints)} pts × ${money(c.rate)}${c.moves?` + ${c.moves} truck move(s) × ${money(c.moveCharge)}`:''}`;
+  renderCounts(); renderProgramTable(c); renderQuote(c);
+  el('settingsSummary').innerHTML=`Base/minimum per app price: <b>${money(c.base)}</b><br>Point value: <b>${money(c.rate)}</b><br>Truck move charge: <b>${money(c.moveCharge)}</b><br>Cycle 1 injection multiplier: <b>${c.injectionMultiplier}x</b>`;
+  saveLocal();
+}
+function renderCounts(){
+  const box=el('counts'); box.innerHTML='';
+  config.categories.forEach(i=>{
+    if(!counts[i.id]) return;
+    const pts = i.id==='move' ? '' : `${fmtPts(i.pts)} pts each · `;
+    const row=document.createElement('div'); row.className='countrow';
+    row.innerHTML=`<div class="label">${i.icon||''} ${i.label}<span>${pts}${displayDesc(i)}</span></div><button class="mini danger" onclick="add('${i.id}',-1)">−</button><div class="pill">${counts[i.id]}</div><button class="mini" onclick="add('${i.id}',1)">+</button>`;
+    box.appendChild(row);
+  });
+  if(!box.innerHTML) box.innerHTML='<div class="note">No items added yet. Tap buttons above to start.</div>';
+}
+function renderProgramTable(c){
+  const tbody=el('programRows'); tbody.innerHTML='';
+  const rows=[['1','Injection fertilization',c.injectionPrice]];
+  for(let i=2;i<=8;i++) rows.push([String(i),'Tree/Shrub care application',c.normalPerApp]);
+  rows.forEach(r=>{const tr=document.createElement('tr'); tr.innerHTML=`<td>${r[0]}</td><td>${r[1]}</td><td class="right">${money(r[2])}</td>`; tbody.appendChild(tr);});
+  el('annualTotal').textContent=money(c.annualTotal);
+}
+function renderQuote(c){
+  const lines=[];
+  config.categories.forEach(i=>{if(counts[i.id]) lines.push(`${counts[i.id]} x ${i.label}${i.id!=='move'?` (${fmtPts(i.pts)} pts each)`:''} - ${displayDesc(i)}`);});
+  if(!lines.length) lines.push('No items added yet.');
+  lines.push('', `Total points: ${fmtPts(c.totalPoints)}`, `Normal per app price: ${money(c.normalPerApp)}`, `Cycle 1 injection fertilization per app price: ${money(c.injectionPrice)}`, `Cycles 2-8 normal per app price: ${money(c.normalPerApp)}`, `8-cycle annual program total: ${money(c.annualTotal)}`);
+  el('quote').value=lines.join('\n');
+}
+function renderEditor(){
+  const box=el('categoryEditor'); if(!box || TECHNICIAN_MODE) return; box.innerHTML='';
+  config.categories.forEach(cat=>{
+    const card=document.createElement('div'); card.className='editorCard';
+    card.innerHTML=`<h4>${cat.icon||''} ${cat.label}</h4><div class="editorFields"><label class="control"><span>Points</span><input type="number" step="0.25" min="0" value="${cat.pts}" data-edit="pts" data-id="${cat.id}"></label><label class="control"><span>Subtext</span><textarea data-edit="desc" data-id="${cat.id}">${cat.desc||''}</textarea></label></div>`;
+    box.appendChild(card);
+  });
+}
+async function copySummary(){try{await navigator.clipboard.writeText(el('quote').value); alert('Summary copied.');}catch(e){el('quote').select(); document.execCommand('copy'); alert('Summary copied.');}}
+function resetAll(){if(confirm('Clear this tally?')){counts=Object.fromEntries(config.categories.map(i=>[i.id,0])); render();}}
+function currentConfig(){
+  return {settings:{minimum:getNum('minimum'),rate:getNum('rate'),moveCharge:getNum('moveCharge'),injectionMultiplier:getNum('injectionMultiplier')}, categories:config.categories};
+}
+function generateTechnicianVersion(){
+  const locked=currentConfig(); let html='<!doctype html>\n'+document.documentElement.outerHTML;
+  html=html.replace('const TECHNICIAN_MODE = false;', 'const TECHNICIAN_MODE = true;');
+  html=html.replace('const LOCKED_CONFIG = null;', 'const LOCKED_CONFIG = '+JSON.stringify(locked)+';');
+  const blob=new Blob([html],{type:'text/html'}); const a=document.createElement('a'); a.href=URL.createObjectURL(blob); a.download='tree-shrub-per-app-calculator-technician.html'; document.body.appendChild(a); a.click(); setTimeout(()=>{URL.revokeObjectURL(a.href); a.remove();},500);
+}
+function applyMode(){
+  if(TECHNICIAN_MODE && LOCKED_CONFIG){
+    config=structuredClone(LOCKED_CONFIG);
+    counts=Object.fromEntries(config.categories.map(i=>[i.id,0]));
+    el('minimum').value=config.settings.minimum; el('rate').value=config.settings.rate; el('moveCharge').value=config.settings.moveCharge; el('injectionMultiplier').value=config.settings.injectionMultiplier;
+    document.querySelectorAll('.adminOnly').forEach(x=>x.classList.add('hidden'));
+    el('modeBadge').classList.remove('hidden'); el('settingsSummary').style.display='block'; document.title='Tree/Shrub Per App Price Calculator - Technician';
+  }
+}
+function saveLocal(){
+  try{localStorage.setItem(TECHNICIAN_MODE?'treeShrubTechDraftV4':'treeShrubAdminDraftV4', JSON.stringify({counts,settings:{minimum:el('minimum').value,rate:el('rate').value,moveCharge:el('moveCharge').value,injectionMultiplier:el('injectionMultiplier').value},config}));}catch(e){}
+}
+function loadLocal(){
+  try{
+    const raw=localStorage.getItem(TECHNICIAN_MODE?'treeShrubTechDraftV4':'treeShrubAdminDraftV4'); if(!raw) return;
+    const d=JSON.parse(raw);
+    if(!TECHNICIAN_MODE && d.config){config=d.config; counts=Object.fromEntries(config.categories.map(i=>[i.id,0]));}
+    counts={...counts,...(d.counts||{})};
+    if(!TECHNICIAN_MODE && d.settings){['minimum','rate','moveCharge','injectionMultiplier'].forEach(k=>{if(d.settings[k]!==undefined) el(k).value=d.settings[k];});}
+  }catch(e){}
+}
+document.addEventListener('input',e=>{
+  const t=e.target;
+  if(['minimum','rate','moveCharge','injectionMultiplier'].includes(t.id)) render();
+  if(t.dataset && t.dataset.edit){const cat=category(t.dataset.id); if(!cat) return; if(t.dataset.edit==='pts') cat.pts=+t.value||0; if(t.dataset.edit==='desc') cat.desc=t.value; render();}
+});
+applyMode(); loadLocal(); render();
+</script>
+
+
+</body></html>
